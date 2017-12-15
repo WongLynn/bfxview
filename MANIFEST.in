@@ -1,0 +1,2 @@
+recursive-include bfxview/templates *
+recursive-include bfxview/static *
