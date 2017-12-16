@@ -9,7 +9,7 @@ install_requires = [
 
 setup(
     name="bfxview" ,
-    version="0.1.0" ,
+    version="0.1.1" ,
     description="Bitfinex portfolio viewer",
     license="MIT",
     packages=find_packages(),
