@@ -15,9 +15,10 @@ class BitfinexClient(object):
 
     def init_app(self, app):
         self.app = app
-        app.extensions['bitfinex'] = self
-        self.api_key = app.config['BITFINEX_API_KEY']
-        self.api_secret = app.config['BITFINEX_API_SECRET']
+        self.name = 'bitfinex'
+        app.extensions[self.name] = self
+        self.api_key = app.config[self.name.upper()+'_API_KEY']
+        self.api_secret = app.config[self.name.upper()+'_API_SECRET']
 
     def _nonce(self):
         """
@@ -38,10 +39,9 @@ class BitfinexClient(object):
             "content-type": "application/json"
         }
 
-    def _post_data_auth(self, path):
+    def _post_data_auth(self, path, params={}):
         nonce = self._nonce()
-        body = {}
-        rawBody = json.dumps(body)
+        rawBody = json.dumps(params)
         # path = "v2/auth/r/orders"
         headers = self._headers(path, nonce, rawBody)
         r = requests.post(
@@ -112,3 +112,20 @@ class BitfinexClient(object):
                 w['USD_VALUE'] = w['USD_PRICE'] * w['BALANCE']
             return wlts
 
+    def get_balances(self):
+        fields = [
+            'WALLET_TYPE',
+            'CURRENCY',
+            'BALANCE',
+            'UNSETTLED_INTEREST',
+            'BALANCE_AVAILABLE'
+        ]
+        data = self._post_data_auth('v2/auth/r/wallets')
+        bal_ = [
+            {
+                'exchange': self.name,
+                'asset': x[1],
+                'balance': float(x[2])
+            } for x in data
+        ]
+        return filter(lambda x: x['balance'] > 0.0, bal_)

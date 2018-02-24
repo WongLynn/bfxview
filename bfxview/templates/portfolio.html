@@ -46,6 +46,28 @@
             <span id="genre">nothing placeholder</span>
         </p>
     </div>
+    <div>
+        <table class="table table-bordered">
+            <thead>
+                <tr style="text-align: right;">
+                    {% set fields = ['bch_price', 'token', 'token_price', 'bch_price_in_token', 'target', 'delta', 'original_tokens', 'token_delta'] %}
+                    {% for fld in fields %}
+                        <th>{{ fld }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in bch_table %}
+                <tr>
+                    {% set fields = ['bch_price', 'token', 'token_price', 'bch_price_in_token', 'target', 'delta', 'original_tokens', 'token_delta'] %}
+                    {% for fld in fields %}
+                        <td>{{ item[fld] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 
 </html>
