@@ -97,3 +97,19 @@ def create_app(config_pyfile):
 
     app.register_blueprint(blueprint)
     return app
+
+    @blueprint.route('/transfers/<exchange>')
+    def transfers(exchange):
+        if exchange not in app.extensions:
+            return jsonify({
+                'message': 'Invalid Exchange %s.' % exchange
+            })
+        if not hasattr(app.extensions[exchange], 'get_transfers'):
+            return jsonify({
+                'message': 'Cannot Get Trades for Exchange %s.' % exchange
+            })
+        out = app.extensions[exchange].get_transfers()
+        return jsonify(out)
+
+    app.register_blueprint(blueprint)
+    return app

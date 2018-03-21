@@ -54,3 +54,22 @@ class BinanceClient(object):
                 return out
             out.extend(data)
             params['fromId'] = data[-1]['id'] + 1
+
+    def get_transfers(self):
+        def with_type(item, type):
+            item['type'] = type
+            return item
+        out = []
+        data = self.client.get_deposit_history()
+        if data and 'depositList' in data:
+            out.extend([
+                with_type(item, 'Deposit')
+                for item in data['depositList']
+            ])
+        data = self.client.get_withdraw_history()
+        if data and 'withdrawList' in data:
+            out.extend([
+                with_type(item, 'Withdraw')
+                for item in data['withdrawList']
+            ])
+        return out
