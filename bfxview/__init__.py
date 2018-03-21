@@ -95,9 +95,6 @@ def create_app(config_pyfile):
         out = app.extensions[exchange].get_trades(pair)
         return jsonify(out)
 
-    app.register_blueprint(blueprint)
-    return app
-
     @blueprint.route('/transfers/<exchange>')
     def transfers(exchange):
         if exchange not in app.extensions:
