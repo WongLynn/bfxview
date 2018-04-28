@@ -27,7 +27,7 @@ class FybClient(object):
     def _timestamp(self):
         return str(int(round(time.time())))
 
-    def _post_data_auth(self, path, params):
+    def _post_data_auth(self, path, params={}):
         params['timestamp'] = self._timestamp()
         payload = urlencode(params)
         h = hmac.new(self.api_secret, payload, hashlib.sha1)
@@ -41,13 +41,23 @@ class FybClient(object):
         r = requests.post(
             self.BASE_URL + path,
             headers=headers,
-           data=payload
+            data=payload
         )
-        if r.status_code == 200:
-            return r.content
         return r
 
-    @property
+    def _post_data(self, path, params={}):
+        for k in params.keys():
+            if params[k] is None:
+                del params[k]
+        payload = urlencode(params)
+        p = payload and ('?' + payload)
+        r = requests.post(
+            self.BASE_URL + path + p,
+            data=payload
+        )
+        return r
+    
+    #### Private Endpoints ####
     def test(self):
         params = {}
         data = self._post_data_auth('/test', params)
@@ -62,3 +72,36 @@ class FybClient(object):
         params = {'limit': 20}
         data = self._post_data_auth('/getorderhistory', params)
         return data
+
+    def get_pending_orders(self):
+        data = self._post_data_auth('/getpendingorders')
+        return data
+
+    def cancel_pending_orders(self, orderNo=None):
+        params = {'orderNo': orderNo}
+        data = self._post_data_auth('/cancelpendingorder', params)
+        return data
+
+    def place_order(self, qty, price, side):
+        assert side in ['B', 'S'], 'side has to be either "B" or "S"'
+        params = {
+            'qty': qty,
+            'price': price,
+            'type': side
+        }
+        data = self._post_data_auth('/placeorder', params)
+        return data
+    
+    #### Public Endpoints ###
+    def get_ticker(self):
+        return self._post_data('/ticker.json')
+
+    def get_ticker_details(self):
+        return self._post_data('/tickerdetailed.json')
+    
+    def get_order_book(self):
+        return self._post_data('/orderbook.json')
+
+    def get_trades(self, since=None):
+        params = {'since': since}
+        return self._post_data('/trades.json', params)
