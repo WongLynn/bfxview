@@ -9,6 +9,7 @@ except:
     from urllib import quote, urlencode
 import time #for nonce
 
+
 class GeminiClient(object):
     BASE_URL = "https://api.gemini.com"
 
@@ -27,7 +28,7 @@ class GeminiClient(object):
     def _timestamp(self):
         return str(int(round(time.time() * 1000)))
 
-    def _post_data_auth(self, path, params):
+    def _post_data_auth(self, path, params={}):
         params['request'] = path
         params['nonce'] = self._timestamp()
         payload = base64.b64encode(json.dumps(params))
@@ -48,6 +49,23 @@ class GeminiClient(object):
         )
         if r.status_code == 200:
             return r.json()
+        return r
+
+    def _post_data(self, path):
+        r = requests.post(
+            self.BASE_URL + path
+        )
+        if r.status_code == 200:
+            return r.json()
+        return r
+
+    def _get_data(self, path):
+        r = requests.get(
+            self.BASE_URL + path
+        )
+        if r.status_code == 200:
+            return r.json()
+        return r
 
     @property
     def wallets(self):
@@ -86,3 +104,40 @@ class GeminiClient(object):
                 return out
             out.extend(reversed(data))
             params['timestamp'] = data[0]['timestamp'] + 1
+
+    def place_order(self, side, price=0.0, amount=0.0, symbol='btcusd', type='exchange limit', client_order_id=None):
+        params = {
+            'side': side,
+            'price': price,
+            'amount': amount,
+            'symbol': symbol,
+            'type': type,
+        }
+        if client_order_id:
+            params['client_order_id'] = client_order_id
+        return self._post_data_auth('/v1/order/new', params)
+
+    def cancel_order(self, order_id):
+        params = {
+            'order_id': order_id
+        }
+        return self._post_data_auth('/v1/order/cancel', params)
+
+    def get_order_status(self, order_id):
+        params = {
+            'order_id': order_id
+        }
+        return self._post_data_auth('/v1/order/status', params)
+
+    def get_active_orders(self):
+        return self._post_data_auth('/v1/orders')
+
+    #### Public Endpoints ###
+    def get_symbols(self):
+        return self._get_data('/v1/symbols')
+
+    def get_ticker(self, symbol='btcusd'):
+        return self._get_data('/v1/pubticker/' + symbol)
+
+    def get_order_book(self, symbol='btcusd'):
+        return self._get_data('/v1/book/' + symbol)

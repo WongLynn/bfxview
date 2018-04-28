@@ -5,6 +5,7 @@ from .binance_ex import BinanceClient
 from .bithumb import BithumbClient
 from .gateio import GateIOClient
 from .gemini import GeminiClient
+from .fyb import FybClient
 
 
 def create_app(config_pyfile):
